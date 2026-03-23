@@ -49,21 +49,23 @@ class EconomicService {
         console.error("JKSE LIVE UPLINK FAILED (Market Closed / Network Error):", jkseError);
       }
 
-      // Fetch Live Forex Rates using Google Finance proxy in parallel for instant synchronous updates
-      const currencies = ['USD', 'EUR', 'SGD', 'JPY', 'AUD'];
-      await Promise.all(currencies.map(async (cur) => {
-          try {
-              const forexUrl = import.meta.env.DEV ? `/api/googlefinance/${cur}-IDR` : `/api/googlefinance?ticker=${cur}-IDR`;
-              const fxRes = await fetch(forexUrl);
-              const fxHtml = await fxRes.text();
-              const fxPriceMatch = fxHtml.match(/data-last-price="([\d.]+)"/);
-              if (fxPriceMatch) {
-                  this.data.rates[cur] = parseFloat(fxPriceMatch[1]);
-              }
-          } catch (e) {
-              console.warn(`Failed to fetch ${cur}-IDR live rate`, e);
+      // Fetch Live Forex Rates from Frankfurter API (free, CORS-friendly, ECB reference rates, no API key)
+      // This is far more reliable than scraping Google Finance HTML which varies per currency pair.
+      try {
+        const currencies = ['USD', 'EUR', 'SGD', 'JPY', 'AUD'];
+        const results = await Promise.all(currencies.map(cur =>
+          fetch(`https://api.frankfurter.dev/v1/latest?base=${cur}&symbols=IDR`)
+            .then(r => r.json())
+            .catch(() => null)
+        ));
+        currencies.forEach((cur, i) => {
+          if (results[i] && results[i].rates && results[i].rates.IDR) {
+            this.data.rates[cur] = results[i].rates.IDR;
           }
-      }));
+        });
+      } catch (fxError) {
+        console.error("FOREX UPLINK FAILED:", fxError);
+      }
 
       this.notifySubscribers();
     } catch (error) {
