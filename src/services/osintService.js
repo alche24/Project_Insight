@@ -109,6 +109,7 @@ class OSINTService {
         return {
           id: Date.now() + index,
           title: item.title,
+          url: item.link || null,
           location: `SECTOR: ${lat.toFixed(2)}, ${lng.toFixed(2)}`,
           lat: lat,
           lng: lng,

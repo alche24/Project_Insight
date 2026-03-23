@@ -6,10 +6,13 @@
     </div>
     <div class="feed-content">
       <transition-group name="list" tag="div">
-        <div 
+        <a 
           v-for="event in events" 
           :key="event.id"
-          class="intel-item"
+          :href="event.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="intel-item intel-link"
           :class="{ 'alert-critical': event.severity === 'CRITICAL', 'alert-high': event.severity === 'HIGH' }"
         >
           <div class="item-meta">
@@ -19,7 +22,7 @@
           <div class="item-title">{{ event.title }}</div>
           <div class="item-location">LOC: {{ event.location }}</div>
           <div class="item-impact">> {{ event.impact }}</div>
-        </div>
+        </a>
       </transition-group>
     </div>
   </div>
@@ -79,6 +82,13 @@ defineProps({
   background: rgba(0, 240, 255, 0.02);
   transition: all 0.3s ease;
   position: relative;
+}
+
+.intel-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .intel-item::before {
