@@ -1,34 +1,28 @@
-// Simulated OSINT Intelligence Feed prioritizing insights within 5 seconds.
-// This service provides both mock data and a polling mechanism.
-
-const MOCK_EVENTS = [
-  { id: 1, title: 'Unusual Naval Movement Detected', location: 'South China Sea', lat: 10.5, lng: 114.5, severity: 'HIGH', time: Date.now() - 300000, category: 'MILITARY', impact: 'Potential disruption to shipping routes affecting Indonesian trade.' },
-  { id: 2, title: 'Cyber Intrusion Attempt on National Grid', location: 'Jakarta, ID', lat: -6.2088, lng: 106.8456, severity: 'CRITICAL', time: Date.now() - 1200000, category: 'CYBER', impact: 'Mitigated. No current impact on capital infrastructure.' },
-  { id: 3, title: 'Seismic Anomaly / Unregistered Activity', location: 'Krakatoa Sector', lat: -6.1021, lng: 105.423, severity: 'MEDIUM', time: Date.now() - 3600000, category: 'GEOPOLITICAL', impact: 'Monitoring. Low immediate threat level.' },
-  { id: 4, title: 'Economic Sanctions Shift in Region', location: 'Singapore', lat: 1.3521, lng: 103.8198, severity: 'LOW', time: Date.now() - 7200000, category: 'ECONOMY', impact: 'Positive potential for IDR foreign exchange markets.' },
-  { id: 5, title: 'Unauthorized Drone Surveillance', location: 'Natuna Regency', lat: 3.9491, lng: 108.1429, severity: 'HIGH', time: Date.now() - 60000, category: 'DEFENSE', impact: 'Awaiting visual confirmation from interceptors.' }
-];
+// Live OSINT Intelligence Feed
+// Fetches real world news and dynamically maps it to coordinates for the S.H.I.E.L.D Globe
 
 class OSINTService {
   constructor() {
     this.subscribers = [];
-    this.events = [...MOCK_EVENTS];
+    this.events = [];
     this.pollingInterval = null;
+    
+    // Fallback coordinates for Indonesia region (Sumatra to Papua)
+    this.geoBounds = {
+      minLat: -10.0, maxLat: 5.0,
+      minLng: 95.0, maxLng: 140.0
+    };
   }
 
   startPolling(intervalMinutes = 10) {
     if (this.pollingInterval) clearInterval(this.pollingInterval);
-    
-    // Convert minutes to milliseconds. 
-    // Wait, for demo purposes we can refresh every 10 seconds, but specs said 10 minutes.
     const intervalMs = intervalMinutes * 60 * 1000;
     
     this.pollingInterval = setInterval(() => {
-      this.refreshData();
+      this.fetchLiveNews();
     }, intervalMs);
 
-    // Initial load
-    this.refreshData();
+    this.fetchLiveNews(); // Initial load
   }
 
   stopPolling() {
@@ -37,38 +31,65 @@ class OSINTService {
     }
   }
 
-  async refreshData() {
-    // In a real scenario, this would be: await fetch('https://api.example.com/osint')
-    // We simulate a network request generating a new event dynamically to simulate live intel.
-    
-    const newEvent = this.generateRandomEvent();
-    this.events.unshift(newEvent);
-    if (this.events.length > 50) this.events.pop(); // Keep array size manageable
-    
-    this.notifySubscribers();
-  }
+  async fetchLiveNews() {
+    try {
+      // OPTION 2: LIVE NEWS FETCH
+      // Using a free RSS-to-JSON proxy to pull live Asia-Pacific/World News without needing an API Key.
+      // If you get an API key from GNews.io, you can replace this URL with:
+      // const url = 'https://gnews.io/api/v4/search?q=indonesia&lang=en&apikey=YOUR_API_KEY';
+      
+      const rssUrl = encodeURIComponent('https://www.aljazeera.com/xml/rss/all.xml');
+      const url = `https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.status === 'ok' && data.items) {
+        this.events = data.items.slice(0, 15).map((item, index) => {
+          
+          // Generate random realistic coordinates in the Indonesian / APAC sector
+          const lat = Math.random() * (this.geoBounds.maxLat - this.geoBounds.minLat) + this.geoBounds.minLat;
+          const lng = Math.random() * (this.geoBounds.maxLng - this.geoBounds.minLng) + this.geoBounds.minLng;
+          
+          // Assign severity based on keywords in title
+          const titleUpper = item.title.toUpperCase();
+          let severity = 'MEDIUM';
+          let category = 'GEOPOLITICAL';
+          
+          if (titleUpper.includes('ATTACK') || titleUpper.includes('WAR') || titleUpper.includes('MILITARY')) {
+            severity = 'CRITICAL';
+            category = 'MILITARY';
+          } else if (titleUpper.includes('CYBER') || titleUpper.includes('HACK')) {
+            severity = 'HIGH';
+            category = 'CYBER';
+          } else if (titleUpper.includes('ECONOMY') || titleUpper.includes('TRADE')) {
+            severity = 'LOW';
+            category = 'ECONOMY';
+          }
 
-  generateRandomEvent() {
-    const lat = (Math.random() * 20 - 15); // near Indonesia roughly -15 to 5
-    const lng = (Math.random() * 40 + 95);  // near Indonesia 95 to 135
-    const categories = ['CYBER', 'MILITARY', 'GEOPOLITICAL', 'ECONOMY', 'DEFENSE'];
-    
-    return {
-      id: Date.now(),
-      title: `Automated Signal Intel: Anomalous ${categories[Math.floor(Math.random() * categories.length)]} Activity`,
-      location: `Coord: ${lat.toFixed(2)}, ${lng.toFixed(2)}`,
-      lat,
-      lng,
-      severity: Math.random() > 0.8 ? 'CRITICAL' : Math.random() > 0.4 ? 'HIGH' : 'MEDIUM',
-      time: Date.now(),
-      category: categories[Math.floor(Math.random() * categories.length)],
-      impact: 'Analysis pending. High probability of relevance to ID infrastructure.'
-    };
+          return {
+            id: Date.now() + index,
+            title: item.title,
+            location: `SECTOR: ${lat.toFixed(2)}, ${lng.toFixed(2)}`,
+            lat: lat,
+            lng: lng,
+            severity: severity,
+            time: new Date(item.pubDate).getTime(),
+            category: category,
+            impact: 'SOURCE: LIVE UPLINK - ' + (item.author || 'GLOBAL FEED')
+          };
+        });
+
+        this.notifySubscribers();
+      }
+    } catch (error) {
+      console.error("OSINT Uplink Failed:", error);
+    }
   }
 
   subscribe(callback) {
     this.subscribers.push(callback);
-    callback(this.events); // immediate call with current data
+    callback(this.events);
     return () => {
       this.subscribers = this.subscribers.filter(cb => cb !== callback);
     };
