@@ -39,12 +39,25 @@ class EconomicService {
         AUD: idrRate / apiData.rates.AUD
       };
 
-      // Since free live CORS APIs for the Jakarta Stock Exchange (JKSE) are extremely limited and volatile,
-      // we merge real currency data with a statistically realistic continuous JKSE simulation for the S.H.I.E.L.D UI visual effect.
-      const volatility = (Math.random() - 0.45) * 12; // slight positive bias
-      this.data.jkse.change = volatility;
-      this.data.jkse.value = Math.max(0, this.data.jkse.value + volatility);
-      this.data.jkse.percent = (this.data.jkse.change / this.data.jkse.value) * 100;
+      // Fetch actual LIVE data for the Jakarta Stock Exchange (JKSE / IHSG) using Yahoo Finance
+      // In development, we use the Vite proxy to bypass CORS.
+      try {
+        const jkseUrl = import.meta.env.DEV ? '/api/yahoo/v8/finance/chart/%5EJKSE' : 'https://query1.finance.yahoo.com/v8/finance/chart/%5EJKSE';
+        const jkseRes = await fetch(jkseUrl);
+        const jkseData = await jkseRes.json();
+        
+        if (jkseData.chart && jkseData.chart.result && jkseData.chart.result.length > 0) {
+          const meta = jkseData.chart.result[0].meta;
+          const currentPrice = meta.regularMarketPrice;
+          const prevClose = meta.chartPreviousClose;
+          
+          this.data.jkse.value = currentPrice;
+          this.data.jkse.change = currentPrice - prevClose;
+          this.data.jkse.percent = (this.data.jkse.change / prevClose) * 100;
+        }
+      } catch (jkseError) {
+        console.error("JKSE LIVE UPLINK FAILED (Market Closed / Network Error):", jkseError);
+      }
 
       this.notifySubscribers();
     } catch (error) {
