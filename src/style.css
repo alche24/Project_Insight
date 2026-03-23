@@ -1,0 +1,99 @@
+:root {
+  --shield-bg: #0a0e17;
+  --shield-blue: #00f0ff;
+  --shield-blue-dim: rgba(0, 240, 255, 0.2);
+  --shield-dark-blue: #042e47;
+  --shield-text: #e0fbfc;
+  --shield-text-dim: #88c0d0;
+  --shield-alert: #ff2a2a;
+  --shield-alert-dim: rgba(255, 42, 42, 0.2);
+  
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --font-sans: 'Rajdhani', 'Roboto', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--shield-bg);
+  background-image: 
+    linear-gradient(var(--shield-blue-dim) 1px, transparent 1px),
+    linear-gradient(90deg, var(--shield-blue-dim) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center top;
+  color: var(--shield-text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* S.H.I.E.L.D. Panel Style */
+.shield-panel {
+  background: rgba(10, 14, 23, 0.85);
+  border: 1px solid var(--shield-blue);
+  box-shadow: 0 0 10px var(--shield-blue-dim), inset 0 0 20px rgba(0, 240, 255, 0.05);
+  position: relative;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+
+/* Panel Corner Accents */
+.shield-panel::before,
+.shield-panel::after {
+  content: '';
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--shield-blue);
+}
+
+.shield-panel::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.shield-panel::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 5px var(--shield-blue);
+}
+
+.text-glow {
+  text-shadow: 0 0 8px var(--shield-blue);
+}
+
+.text-alert {
+  color: var(--shield-alert);
+  text-shadow: 0 0 8px var(--shield-alert);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--shield-dark-blue);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--shield-blue);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #fff;
+}
