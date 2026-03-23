@@ -74,10 +74,13 @@ class OSINTService {
         seen.add(key);
         return true;
       });
+      // Filter to last 24 hours only
+      const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+      const recent = unique.filter(item => new Date(item.pubDate).getTime() >= twentyFourHoursAgo);
 
-      // Sort newest first, take top 25
-      unique.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-      const top = unique.slice(0, 25);
+      // Sort newest first, take top 200
+      recent.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+      const top = recent.slice(0, 200);
 
       this.events = top.map((item, index) => {
         // Generate random realistic coordinates in the Indonesian / APAC sector
