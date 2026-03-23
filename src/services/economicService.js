@@ -39,21 +39,25 @@ class EconomicService {
         AUD: idrRate / apiData.rates.AUD
       };
 
-      // Fetch actual LIVE data for the Jakarta Stock Exchange (JKSE / IHSG) using Yahoo Finance
-      // In development, we use the Vite proxy to bypass CORS.
+      // Fetch actual LIVE data for the Jakarta Stock Exchange (JKSE / IHSG)
+      // Yahoo's free tier for ^JKSE is often delayed or stuck. We use the Vite proxy to scrape Google Finance for an exact live match.
       try {
-        const jkseUrl = import.meta.env.DEV ? '/api/yahoo/v8/finance/chart/%5EJKSE' : 'https://query1.finance.yahoo.com/v8/finance/chart/%5EJKSE';
+        const jkseUrl = import.meta.env.DEV ? '/api/googlefinance' : 'https://corsproxy.io/?https://www.google.com/finance/quote/COMPOSITE:IDX';
         const jkseRes = await fetch(jkseUrl);
-        const jkseData = await jkseRes.json();
+        const html = await jkseRes.text();
         
-        if (jkseData.chart && jkseData.chart.result && jkseData.chart.result.length > 0) {
-          const meta = jkseData.chart.result[0].meta;
-          const currentPrice = meta.regularMarketPrice;
-          const prevClose = meta.chartPreviousClose;
-          
+        const priceMatch = html.match(/data-last-price="([\d.]+)"/);
+        
+        if (priceMatch) {
+          const currentPrice = parseFloat(priceMatch[1]);
           this.data.jkse.value = currentPrice;
-          this.data.jkse.change = currentPrice - prevClose;
-          this.data.jkse.percent = (this.data.jkse.change / prevClose) * 100;
+          
+          // Google Finance embeds the percentage change close to the price
+          const changePctMatch = html.match(/class="[^"]*JwB6zf[^"]*"[^>]*>([-+]*[\d.]+)%<\/div>/);
+          if (changePctMatch) {
+             this.data.jkse.percent = parseFloat(changePctMatch[1]);
+             this.data.jkse.change = currentPrice - (currentPrice / (1 + (this.data.jkse.percent / 100)));
+          }
         }
       } catch (jkseError) {
         console.error("JKSE LIVE UPLINK FAILED (Market Closed / Network Error):", jkseError);
