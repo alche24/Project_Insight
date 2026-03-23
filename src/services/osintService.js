@@ -15,13 +15,13 @@ class OSINTService {
 
     // Indonesian + International RSS feeds
     this.rssFeeds = [
-      { url: 'https://www.antaranews.com/rss/terkini',              source: 'ANTARA NEWS' },
-      { url: 'https://rss.kompas.com/or/kompas',                    source: 'KOMPAS' },
-      { url: 'https://rss.detik.com/index.php/detikcom',            source: 'DETIK' },
-      { url: 'https://www.cnbcindonesia.com/rss',                   source: 'CNBC INDONESIA' },
-      { url: 'https://rss.tempo.co/nasional',                       source: 'TEMPO' },
-      { url: 'https://www.republika.co.id/rss',                     source: 'REPUBLIKA' },
-      { url: 'https://www.aljazeera.com/xml/rss/all.xml',           source: 'AL JAZEERA' },
+      { url: 'https://www.antaranews.com/rss/terkini',              source: 'ANTARA NEWS',     category: 'NATIONAL' },
+      { url: 'https://rss.kompas.com/or/kompas',                    source: 'KOMPAS',          category: 'NATIONAL' },
+      { url: 'https://rss.detik.com/index.php/detikcom',            source: 'DETIK',           category: 'NATIONAL' },
+      { url: 'https://www.cnbcindonesia.com/rss',                   source: 'CNBC INDONESIA',  category: 'ECONOMY' },
+      { url: 'https://rss.tempo.co/nasional',                       source: 'TEMPO',           category: 'NATIONAL' },
+      { url: 'https://www.republika.co.id/rss',                     source: 'REPUBLIKA',       category: 'NATIONAL' },
+      { url: 'https://www.aljazeera.com/xml/rss/all.xml',           source: 'AL JAZEERA',      category: 'GEOPOLITICAL' },
     ];
   }
 
@@ -49,7 +49,7 @@ class OSINTService {
     const data = await response.json();
 
     if (data.status === 'ok' && data.items) {
-      return data.items.map(item => ({ ...item, _source: feed.source }));
+      return data.items.map(item => ({ ...item, _source: feed.source, _category: feed.category }));
     }
     return [];
   }
@@ -87,10 +87,10 @@ class OSINTService {
         const lat = Math.random() * (this.geoBounds.maxLat - this.geoBounds.minLat) + this.geoBounds.minLat;
         const lng = Math.random() * (this.geoBounds.maxLng - this.geoBounds.minLng) + this.geoBounds.minLng;
 
-        // Assign severity based on keywords in title
+        // Default category from feed source, then override by keywords
         const titleUpper = item.title.toUpperCase();
         let severity = 'MEDIUM';
-        let category = 'GEOPOLITICAL';
+        let category = item._category || 'NATIONAL';
 
         if (titleUpper.includes('ATTACK') || titleUpper.includes('WAR') || titleUpper.includes('MILITARY') || titleUpper.includes('SERANGAN') || titleUpper.includes('MILITER')) {
           severity = 'CRITICAL';
