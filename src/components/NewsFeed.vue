@@ -42,6 +42,8 @@ defineProps({
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 400px;
+  max-height: 80vh; /* Prevents infinite growth on zoom */
 }
 
 .feed-header {
@@ -74,6 +76,7 @@ defineProps({
   flex-direction: column;
   gap: 15px;
   padding-right: 5px;
+  padding-bottom: 20px;
 }
 
 .intel-item {

@@ -131,6 +131,8 @@ const scrollToBottom = async () => {
 .ai-summary-wrapper {
   width: 100%;
   height: 100%;
+  min-height: 400px;
+  max-height: 80vh; /* Prevents infinite growth on zoom */
   background: rgba(4, 15, 23, 0.9);
   border: 1px solid var(--shield-blue);
   display: flex;

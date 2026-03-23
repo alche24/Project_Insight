@@ -110,8 +110,9 @@ onUnmounted(() => {
 .dashboard-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   padding: 10px;
+  box-sizing: border-box;
 }
 
 .dashboard-header {
@@ -160,19 +161,23 @@ onUnmounted(() => {
   display: flex;
   gap: 15px;
   flex: 1;
-  overflow: hidden;
+  flex-wrap: wrap; /* Allow panels to stack on zoom/small screens */
 }
 
 .left-panel, .right-panel {
-  width: 300px;
+  flex: 1;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
+  gap: 15px;
 }
 
 .center-panel {
-  flex: 1;
+  flex: 2;
+  min-width: 500px;
   display: flex;
   flex-direction: column;
+  min-height: 400px;
 }
 
 .globe-container {
@@ -193,11 +198,10 @@ onUnmounted(() => {
 }
 
 .metrics-panel {
-  flex: 1;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   gap: 15px;
-  overflow: hidden;
 }
 
 .metric {
