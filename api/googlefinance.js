@@ -1,8 +1,9 @@
 export default async function handler(req, res) {
   try {
-    // Vercel Serverless Function to privately proxy Google Finance
-    // Bypasses CORS and prevents Google from blocking the frontend user's IP.
-    const fetchRes = await fetch('https://www.google.com/finance/quote/COMPOSITE:IDX', {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const ticker = url.searchParams.get('ticker') || 'COMPOSITE:IDX';
+
+    const fetchRes = await fetch(`https://www.google.com/finance/quote/${ticker}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'

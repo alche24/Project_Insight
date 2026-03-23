@@ -25,24 +25,10 @@ class EconomicService {
 
   async fetchMarketData() {
     try {
-      // Fetch live cross-rates relative to USD using a free CORS-enabled API
-      const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-      const apiData = await res.json();
-      
-      const idrRate = apiData.rates.IDR;
-      
-      this.data.rates = {
-        USD: idrRate,
-        EUR: idrRate / apiData.rates.EUR,
-        SGD: idrRate / apiData.rates.SGD,
-        JPY: idrRate / apiData.rates.JPY,
-        AUD: idrRate / apiData.rates.AUD
-      };
-
       // Fetch actual LIVE data for the Jakarta Stock Exchange (JKSE / IHSG)
       // Yahoo's free tier for ^JKSE is often delayed or stuck. We use the Vite proxy to scrape Google Finance for an exact live match.
       try {
-        const jkseUrl = '/api/googlefinance'; // Uses Vite Proxy in DEV, and Vercel Rewrite in PROD
+        const jkseUrl = import.meta.env.DEV ? '/api/googlefinance/COMPOSITE:IDX' : '/api/googlefinance?ticker=COMPOSITE:IDX';
         const jkseRes = await fetch(jkseUrl);
         const html = await jkseRes.text();
         
@@ -62,6 +48,22 @@ class EconomicService {
       } catch (jkseError) {
         console.error("JKSE LIVE UPLINK FAILED (Market Closed / Network Error):", jkseError);
       }
+
+      // Fetch Live Forex Rates using Google Finance proxy in parallel for instant synchronous updates
+      const currencies = ['USD', 'EUR', 'SGD', 'JPY', 'AUD'];
+      await Promise.all(currencies.map(async (cur) => {
+          try {
+              const forexUrl = import.meta.env.DEV ? `/api/googlefinance/${cur}-IDR` : `/api/googlefinance?ticker=${cur}-IDR`;
+              const fxRes = await fetch(forexUrl);
+              const fxHtml = await fxRes.text();
+              const fxPriceMatch = fxHtml.match(/data-last-price="([\d.]+)"/);
+              if (fxPriceMatch) {
+                  this.data.rates[cur] = parseFloat(fxPriceMatch[1]);
+              }
+          } catch (e) {
+              console.warn(`Failed to fetch ${cur}-IDR live rate`, e);
+          }
+      }));
 
       this.notifySubscribers();
     } catch (error) {
