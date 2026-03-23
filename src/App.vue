@@ -17,13 +17,7 @@
         <NewsFeed :events="events" />
       </aside>
       <section class="center-panel">
-        <div class="globe-container shield-panel">
-          <div class="panel-header">
-            <h3>GLOBAL THREAT MATRIX</h3>
-            <div class="scan-line"></div>
-          </div>
-          <GlobeView :events="events" />
-        </div>
+        <AiSummaryView :events="events" />
       </section>
       <aside class="right-panel">
         <div class="shield-panel metrics-panel">
@@ -54,7 +48,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NewsFeed from './components/NewsFeed.vue';
-import GlobeView from './components/GlobeView.vue';
+import AiSummaryView from './components/AiSummaryView.vue';
 import { osintService } from './services/osintService';
 
 const events = ref([]);
