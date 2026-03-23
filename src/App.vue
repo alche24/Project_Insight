@@ -32,8 +32,8 @@
             <span class="value text-glow">{{ events.length }}</span>
           </div>
           <div class="metric">
-            <span class="label">REFRESH CYCLE</span>
-            <span class="value">10:00 MIN</span>
+            <span class="label">NEXT REFRESH</span>
+            <span class="value countdown-value" :class="{ 'text-alert': countdownSeconds <= 30 }">{{ countdownDisplay }}</span>
           </div>
           <div class="system-logs">
             <div v-for="log in sysLogs" :key="log.id" class="log-entry">
@@ -47,16 +47,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import NewsFeed from './components/NewsFeed.vue';
 import AiSummaryView from './components/AiSummaryView.vue';
 import MarketIndicators from './components/MarketIndicators.vue';
 import { osintService } from './services/osintService';
 
+const REFRESH_INTERVAL_MINUTES = 10;
 const events = ref([]);
 const lastSyncTime = ref('');
 const sysLogs = ref([]);
+const countdownSeconds = ref(REFRESH_INTERVAL_MINUTES * 60);
 let unsubscribe = null;
+let countdownTimer = null;
+
+const countdownDisplay = computed(() => {
+  const mins = Math.floor(countdownSeconds.value / 60);
+  const secs = countdownSeconds.value % 60;
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+});
 
 const updateTime = () => {
   const now = new Date();
@@ -65,11 +74,13 @@ const updateTime = () => {
 
 onMounted(() => {
   // Start the 10 minute polling
-  osintService.startPolling(10);
+  osintService.startPolling(REFRESH_INTERVAL_MINUTES);
   
   unsubscribe = osintService.subscribe((newData) => {
     events.value = newData;
     updateTime();
+    // Reset countdown on each refresh
+    countdownSeconds.value = REFRESH_INTERVAL_MINUTES * 60;
     
     // Add to sys logs
     sysLogs.value.unshift({
@@ -80,6 +91,13 @@ onMounted(() => {
     if (sysLogs.value.length > 5) sysLogs.value.pop();
   });
 
+  // Countdown tick every second
+  countdownTimer = setInterval(() => {
+    if (countdownSeconds.value > 0) {
+      countdownSeconds.value--;
+    }
+  }, 1000);
+
   // initial time
   setInterval(updateTime, 1000);
 });
@@ -87,6 +105,7 @@ onMounted(() => {
 onUnmounted(() => {
   osintService.stopPolling();
   if (unsubscribe) unsubscribe();
+  if (countdownTimer) clearInterval(countdownTimer);
 });
 </script>
 
@@ -213,5 +232,21 @@ onUnmounted(() => {
 
 .log-entry {
   margin-bottom: 5px;
+}
+
+.countdown-value {
+  font-family: var(--font-mono);
+  letter-spacing: 2px;
+}
+
+.text-alert {
+  color: var(--shield-alert) !important;
+  text-shadow: 0 0 8px var(--shield-alert);
+  animation: pulse-alert 1s infinite;
+}
+
+@keyframes pulse-alert {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 </style>
