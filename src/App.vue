@@ -2,7 +2,7 @@
   <div class="dashboard-layout">
     <header class="dashboard-header">
       <div class="brand">
-        <h1>S.H.I.E.L.D. // OSINT.DIRECTIVE</h1>
+        <h1>W.E.L.L.Y. // OSINT.DIRECTIVE</h1>
         <div class="subtitle">REGIONAL MONITOR: INDONESIA - SECURE CONNECTION <span class="blinking-dot">●</span></div>
       </div>
       <div class="system-status text-glow">
