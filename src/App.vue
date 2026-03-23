@@ -20,6 +20,7 @@
         <AiSummaryView :events="events" />
       </section>
       <aside class="right-panel">
+        <MarketIndicators />
         <div class="shield-panel metrics-panel">
           <h3>INTELLIGENCE SUMMARY</h3>
           <div class="metric">
@@ -49,6 +50,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import NewsFeed from './components/NewsFeed.vue';
 import AiSummaryView from './components/AiSummaryView.vue';
+import MarketIndicators from './components/MarketIndicators.vue';
 import { osintService } from './services/osintService';
 
 const events = ref([]);
@@ -178,7 +180,8 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
+  overflow: hidden;
 }
 
 .metric {
