@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/googlefinance",
+      "destination": "https://www.google.com/finance/quote/COMPOSITE:IDX"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

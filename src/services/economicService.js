@@ -42,7 +42,7 @@ class EconomicService {
       // Fetch actual LIVE data for the Jakarta Stock Exchange (JKSE / IHSG)
       // Yahoo's free tier for ^JKSE is often delayed or stuck. We use the Vite proxy to scrape Google Finance for an exact live match.
       try {
-        const jkseUrl = import.meta.env.DEV ? '/api/googlefinance' : 'https://corsproxy.io/?https://www.google.com/finance/quote/COMPOSITE:IDX';
+        const jkseUrl = '/api/googlefinance'; // Uses Vite Proxy in DEV, and Vercel Rewrite in PROD
         const jkseRes = await fetch(jkseUrl);
         const html = await jkseRes.text();
         
