@@ -55,7 +55,7 @@ import { osintService } from './services/osintService';
 
 const REFRESH_INTERVAL_MINUTES = 10;
 const events = ref([]);
-const lastSyncTime = ref('');
+const lastSyncTime = ref('NEVER');
 const sysLogs = ref([]);
 const countdownSeconds = ref(REFRESH_INTERVAL_MINUTES * 60);
 let unsubscribe = null;
@@ -67,7 +67,7 @@ const countdownDisplay = computed(() => {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 });
 
-const updateTime = () => {
+const updateSyncTime = () => {
   const now = new Date();
   lastSyncTime.value = now.toLocaleTimeString('en-US', { hour12: false });
 };
@@ -78,7 +78,7 @@ onMounted(() => {
   
   unsubscribe = osintService.subscribe((newData) => {
     events.value = newData;
-    updateTime();
+    updateSyncTime();
     // Reset countdown on each refresh
     countdownSeconds.value = REFRESH_INTERVAL_MINUTES * 60;
     
@@ -97,9 +97,6 @@ onMounted(() => {
       countdownSeconds.value--;
     }
   }, 1000);
-
-  // initial time
-  setInterval(updateTime, 1000);
 });
 
 onUnmounted(() => {
