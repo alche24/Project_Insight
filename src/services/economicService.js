@@ -71,14 +71,30 @@ class EconomicService {
     try {
       // 1. Fetch JKSE (Jakarta Stock Exchange)
       try {
-        const jkseUrl = import.meta.env.DEV ? '/api/yahoo/v8/finance/chart/%5EJKSE' : '/api/yahoo?ticker=%5EJKSE';
+        const queryParams = '?range=5d&interval=1d';
+        const jkseUrl = import.meta.env.DEV 
+          ? `/api/yahoo/v8/finance/chart/%5EJKSE${queryParams}` 
+          : `/api/yahoo?ticker=%5EJKSE&range=5d&interval=1d`;
         const jkseRes = await fetch(jkseUrl);
         const json = await jkseRes.json();
         
         if (json.chart && json.chart.result && json.chart.result.length > 0) {
-          const meta = json.chart.result[0].meta;
-          const currentPrice = meta.regularMarketPrice;
-          const previousClose = meta.previousClose;
+          const result = json.chart.result[0];
+          let currentPrice = result.meta?.regularMarketPrice || 0;
+          let previousClose = result.meta?.previousClose || 0;
+          
+          if (result.indicators && result.indicators.quote && result.indicators.quote.length > 0) {
+            const closes = result.indicators.quote[0].close;
+            if (closes && closes.length > 1) {
+              const validCloses = closes.filter(c => c !== null);
+              if (validCloses.length >= 2) {
+                // Using the historical daily candle guarantees the values do not bounce
+                // due to post-market meta field delays on Yahoo's API
+                previousClose = validCloses[validCloses.length - 2];
+                currentPrice = validCloses[validCloses.length - 1];
+              }
+            }
+          }
           
           this.data.jkse.value = currentPrice;
           this.data.jkse.change = currentPrice - previousClose;

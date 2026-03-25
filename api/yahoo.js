@@ -2,8 +2,10 @@ export default async function handler(req, res) {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const ticker = url.searchParams.get('ticker') || '%5EJKSE';
+    const range = url.searchParams.get('range') || '1d';
+    const interval = url.searchParams.get('interval') || '1m';
 
-    const fetchRes = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}`, {
+    const fetchRes = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
