@@ -71,21 +71,19 @@ class EconomicService {
     try {
       // 1. Fetch JKSE (Jakarta Stock Exchange)
       try {
-        const jkseUrl = import.meta.env.DEV ? '/api/googlefinance/COMPOSITE:IDX' : '/api/googlefinance?ticker=COMPOSITE:IDX';
+        const jkseUrl = import.meta.env.DEV ? '/api/yahoo/v8/finance/chart/%5EJKSE' : '/api/yahoo?ticker=%5EJKSE';
         const jkseRes = await fetch(jkseUrl);
-        const html = await jkseRes.text();
-        const priceMatch = html.match(/data-last-price="([\d.]+)"/);
+        const json = await jkseRes.json();
         
-        if (priceMatch) {
-          const currentPrice = parseFloat(priceMatch[1]);
-          this.data.jkse.value = currentPrice;
-          this.data.jkse.lastUpdated = new Date().toISOString();
+        if (json.chart && json.chart.result && json.chart.result.length > 0) {
+          const meta = json.chart.result[0].meta;
+          const currentPrice = meta.regularMarketPrice;
+          const previousClose = meta.previousClose;
           
-          const changePctMatch = html.match(/class="[^"]*JwB6zf[^"]*"[^>]*>([-+]*[\d.]+)%<\/div>/);
-          if (changePctMatch) {
-             this.data.jkse.percent = parseFloat(changePctMatch[1]);
-             this.data.jkse.change = currentPrice - (currentPrice / (1 + (this.data.jkse.percent / 100)));
-          }
+          this.data.jkse.value = currentPrice;
+          this.data.jkse.change = currentPrice - previousClose;
+          this.data.jkse.percent = (this.data.jkse.change / previousClose) * 100;
+          this.data.jkse.lastUpdated = new Date().toISOString();
         }
       } catch (jkseError) {
         console.error("JKSE LIVE UPLINK FAILED:", jkseError);

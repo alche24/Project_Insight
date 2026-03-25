@@ -9,7 +9,7 @@
       <div class="index-box">
         <div class="index-header">
           <div class="label">JKSE / IHSG (JAKARTA)</div>
-          <div class="source-tag">UPLINK: GOOGLE // {{ marketData.jkse.lastUpdated ? new Date(marketData.jkse.lastUpdated).toLocaleTimeString() : '---' }}</div>
+          <div class="source-tag">UPLINK: YAHOO // {{ marketData.jkse.lastUpdated ? new Date(marketData.jkse.lastUpdated).toLocaleTimeString() : '---' }}</div>
         </div>
         <div class="value-row" :class="marketData.jkse.change >= 0 ? 'text-glow-green' : 'text-alert'">
           <span class="value">{{ marketData.jkse.value.toFixed(2) }}</span>
