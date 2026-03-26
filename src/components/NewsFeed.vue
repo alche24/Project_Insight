@@ -17,7 +17,7 @@
         >
           <div class="item-meta">
             <span class="category">[{{ event.category }}]</span>
-            <span class="time">{{ new Date(event.time).toLocaleTimeString() }}</span>
+            <span class="time">{{ formatWIB(event.time) }}</span>
           </div>
           <div class="item-title">{{ event.title }}</div>
           <div class="item-location">LOC: {{ event.location }}</div>
@@ -35,6 +35,17 @@ defineProps({
     required: true
   }
 });
+
+const formatWIB = (timestamp) => {
+  const d = new Date(timestamp);
+  return d.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: 'Asia/Jakarta',
+    hour12: false
+  }) + ' WIB';
+};
 </script>
 
 <style scoped>
