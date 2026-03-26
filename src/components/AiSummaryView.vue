@@ -42,13 +42,14 @@ onMounted(() => {
 
 function getImpactAnalysis(title) {
   const t = title.toUpperCase();
-  if (t.includes('WAR') || t.includes('MILITARY') || t.includes('ARMY')) {
+  // Using word boundaries to prevent matching substrings (e.g. 'WAR' in 'WARISKAN')
+  if (/\b(WAR|MILITARY|ARMY|CONFLICT|PERANG|MILITER)\b/.test(t)) {
     return `Critical monitoring required. Potential diplomatic strain expected for Indonesian foreign policy. Advise Natuna maritime patrols to remain vigilant.`;
-  } else if (t.includes('ECONOMY') || t.includes('MARKET') || t.includes('TRADE')) {
+  } else if (/\b(ECONOMY|MARKET|TRADE|EKONOMI|PASAR)\b/.test(t)) {
     return `Projected volatility for IDR currency pairs. Possible disruption to regional supply chains affecting Indonesian exports.`;
-  } else if (t.includes('CYBER') || t.includes('HACK')) {
+  } else if (/\b(CYBER|HACK|BREACH|SIBER|PERETAS)\b/.test(t)) {
     return `Elevating firewall protocols across Nusantara government infrastructure. No immediate localized breach detected.`;
-  } else if (t.includes('ELECTION') || t.includes('POLITIC')) {
+  } else if (/\b(ELECTION|POLITIC|PEMILU|POLITIK)\b/.test(t)) {
     return `Analyzing shifting power dynamics. Awaiting confirmation on trade agreement impacts for ASEAN.`;
   }
   return `General intelligence logged. Negligible immediate threat to Indonesian sovereign interests. Continued monitoring assigned.`;
